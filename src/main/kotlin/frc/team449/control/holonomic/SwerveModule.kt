@@ -3,8 +3,6 @@ package frc.team449.control.holonomic
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.SparkMaxAbsoluteEncoder
-import edu.wpi.first.math.controller.DifferentialDriveFeedforward
-import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
@@ -13,12 +11,8 @@ import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.Timer
 import frc.team449.robot2023.constants.drives.SwerveConstants
-import frc.team449.system.encoder.Encoder
 import frc.team449.system.motor.SparkUtil
-import frc.team449.system.motor.WrappedMotor
-import frc.team449.system.motor.WrappedSparkMax
 import io.github.oblarg.oblog.Loggable
-import org.opencv.core.Mat.Tuple3
 import kotlin.math.PI
 import kotlin.math.abs
 
@@ -186,6 +180,9 @@ class SwerveModuleSim(
   location
 ) {
   private var prevTime = Timer.getFPGATimestamp()
+  private var moduleAngle = 0.0
+  private var drivingVelocity = 0.0
+
   override var state: SwerveModuleState
     get() = SwerveModuleState(
       drivingEnc.velocity,
@@ -193,18 +190,18 @@ class SwerveModuleSim(
     )
     set(desiredState) {
       super.state = desiredState
-      turningMotor.pidController.setReference(desiredState.angle.radians, CANSparkMax.ControlType.kPosition)
-      drivingMotor.pidController.setReference(desiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity)
+      drivingVelocity = desiredState.speedMetersPerSecond
+      moduleAngle = desiredState.angle.radians
     }
   override val position: SwerveModulePosition
     get() = SwerveModulePosition(
       drivingEnc.position,
-      Rotation2d(turningEnc.position)
+      Rotation2d(moduleAngle)
     )
 
   override fun update() {
     val currTime = Timer.getFPGATimestamp()
-    drivingEnc.position = drivingEnc.position + drivingEnc.velocity * (currTime - prevTime)
+    drivingEnc.position += drivingVelocity * (currTime - prevTime)
     prevTime = currTime
   }
 }
