@@ -8,6 +8,7 @@ import frc.team449.control.holonomic.OrthogonalHolonomicOI.Companion.createOrtho
 import frc.team449.control.holonomic.SwerveDrive
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.subsystems.light.Light
+import frc.team449.robot2023.subsystems.testShooter.Shooter
 import frc.team449.system.AHRS
 import io.github.oblarg.oblog.annotations.Log
 
@@ -34,6 +35,7 @@ class Robot : RobotBase() {
   override val oi = createOrthogonalHolonomicOI(drive, driveController)
 
   val light = Light.createLight()
-//
-//  val infrared = DigitalInput(RobotConstants.IR_CHANNEL)
+
+  val shooter = Shooter.createShooter()
+
 }

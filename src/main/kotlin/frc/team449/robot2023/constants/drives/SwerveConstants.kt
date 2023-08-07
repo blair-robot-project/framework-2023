@@ -1,5 +1,7 @@
 package frc.team449.robot2023.constants.drives
 
+import edu.wpi.first.math.controller.SimpleMotorFeedforward
+import edu.wpi.first.math.geometry.Translation2d
 import edu.wpi.first.math.util.Units
 
 object SwerveConstants {
@@ -29,31 +31,36 @@ object SwerveConstants {
   const val TURN_ENC_OFFSET_BL = 0.205474 + .5
   const val TURN_ENC_OFFSET_BR = 0.620525 - .5
 
-  /** PID gains for turning each module */
-  const val TURN_KP = 0.8
-  const val TURN_KI = 0.0
-  const val TURN_KD = 0.0
+  /** PID gains for driving each module*/
+  const val DRIVE_KP = 0.4
+  const val DRIVE_KI = 0.0
+  const val DRIVE_KD = 0.0
 
   /** Feed forward values for driving each module */
   const val DRIVE_KS = 0.1856
   const val DRIVE_KV = 2.6088
   const val DRIVE_KA = 0.34447
 
-  /** PID gains for driving each module*/
-  const val DRIVE_KP = 0.4
-  const val DRIVE_KI = 0.0
-  const val DRIVE_KD = 0.0
+  /** PID gains for turning each module */
+  const val TURN_KP = 0.8
+  const val TURN_KI = 0.0
+  const val TURN_KD = 0.0
 
   /** Drive configuration */
-  const val DRIVE_GEARING = 1 / 6.75
+  const val DRIVE_GEARING = 1 / 6.12
   const val DRIVE_UPR = 0.31818905832
   const val TURN_UPR = 2 * Math.PI
   const val MAX_ATTAINABLE_MK4I_SPEED = (12 - DRIVE_KS) / DRIVE_KV
   const val DRIVE_CURRENT_LIM = 50
   const val STEERING_CURRENT_LIM = 50
 
-  /** Wheelbase = wheel-to-wheel distance from the side of the robot */
-  /** Trackwidth = wheel-to-wheel distance from the front/back of the robot */
-  val WHEELBASE = Units.inchesToMeters(30.0) // ex. FL to BL
-  val TRACKWIDTH = Units.inchesToMeters(27.00) // ex. BL to BR
+  /** WHEELBASE = distance from FL wheel to BL wheel */
+  val WHEELBASE = Units.inchesToMeters(30.0)
+  /** TRACKWIDTH = distance from FL wheel to FR wheel */
+  val TRACKWIDTH = Units.inchesToMeters(27.00)
+
+  val FL_LOCATION = Translation2d(WHEELBASE / 2, TRACKWIDTH / 2)
+  val FR_LOCATION = Translation2d(WHEELBASE / 2, -TRACKWIDTH / 2)
+  val BL_LOCATION = Translation2d(-WHEELBASE / 2, TRACKWIDTH / 2)
+  val BR_LOCATION = Translation2d(-WHEELBASE / 2, -TRACKWIDTH / 2)
 }

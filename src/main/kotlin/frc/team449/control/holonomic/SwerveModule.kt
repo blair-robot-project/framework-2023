@@ -1,5 +1,9 @@
 package frc.team449.control.holonomic
 
+import com.revrobotics.CANSparkMax
+import com.revrobotics.CANSparkMaxLowLevel
+import com.revrobotics.SparkMaxAbsoluteEncoder
+import edu.wpi.first.math.controller.DifferentialDriveFeedforward
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.math.geometry.Rotation2d
@@ -8,12 +12,18 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition
 import edu.wpi.first.math.kinematics.SwerveModuleState
 import edu.wpi.first.wpilibj.RobotBase
 import edu.wpi.first.wpilibj.Timer
+import frc.team449.robot2023.constants.drives.SwerveConstants
 import frc.team449.system.encoder.Encoder
+import frc.team449.system.motor.SparkUtil
 import frc.team449.system.motor.WrappedMotor
+import frc.team449.system.motor.WrappedSparkMax
 import io.github.oblarg.oblog.Loggable
+import org.opencv.core.Mat.Tuple3
 import kotlin.math.PI
 import kotlin.math.abs
 
+
+// TODO: change these docs
 /**
  * Controls a Swerve Module.
  * @param name The name of the module (used for logging).
@@ -27,27 +37,51 @@ import kotlin.math.abs
  */
 open class SwerveModule(
   private val name: String,
-  private val drivingMotor: WrappedMotor,
-  private val turningMotor: WrappedMotor,
-  private val driveController: PIDController,
-  private val turnController: PIDController,
+  drivingID: Int,
+  turningID: Int,
+  drivePidGains: Triple<Double, Double, Double>,
+  turnPidGains: Triple<Double, Double, Double>,
   private val driveFeedforward: SimpleMotorFeedforward,
+  turnEncoderOffset: Double,
   val location: Translation2d
 ) : Loggable {
+
+  val drivingMotor = CANSparkMax(drivingID, CANSparkMaxLowLevel.MotorType.kBrushless)
+  val turningMotor = CANSparkMax(turningID, CANSparkMaxLowLevel.MotorType.kBrushless)
+
+  val drivingEnc = drivingMotor.encoder
+  val turningEnc = turningMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle)
+
   init {
-    turnController.enableContinuousInput(.0, 2 * PI)
-    driveController.reset()
-    turnController.reset()
+    SparkUtil.applySparkSettings(
+      drivingMotor,
+      encoder = drivingEnc,
+      gearing = SwerveConstants.DRIVE_GEARING,
+      unitPerRotation = SwerveConstants.DRIVE_UPR,
+      pidGains = drivePidGains
+    )
+
+    SparkUtil.applySparkSettings(
+      turningMotor,
+      encoder = turningEnc,
+      gearing = 1.0,
+      unitPerRotation = SwerveConstants.TURN_UPR,
+      offset = turnEncoderOffset,
+      pidGains = turnPidGains
+    )
+
+    SparkUtil.enableContinuousInput(turningMotor, 0.0, 2 * PI)
   }
 
+  var desiredAngle = turningEnc.position
   var desiredSpeed = 0.0
 
   /** The module's [SwerveModuleState], containing speed and angle. */
   open var state: SwerveModuleState
     get() {
       return SwerveModuleState(
-        drivingMotor.velocity,
-        Rotation2d(turningMotor.position)
+        drivingEnc.velocity,
+        Rotation2d(turningEnc.position)
       )
     }
     set(desiredState) {
@@ -58,26 +92,26 @@ open class SwerveModule(
       /** Ensure the module doesn't turn more than 90 degrees. */
       val state = SwerveModuleState.optimize(
         desiredState,
-        Rotation2d(turningMotor.position)
+        Rotation2d(turningEnc.position)
       )
 
-      turnController.setpoint = state.angle.radians
+      desiredAngle = state.angle.radians
       desiredSpeed = state.speedMetersPerSecond
-      driveController.setpoint = state.speedMetersPerSecond
     }
 
   /** The module's [SwerveModulePosition], containing distance and angle. */
   open val position: SwerveModulePosition
     get() {
       return SwerveModulePosition(
-        drivingMotor.position,
-        Rotation2d(turningMotor.position)
+        drivingEnc.position,
+        Rotation2d(turningEnc.position)
       )
     }
 
   /** Set module speed to zero but keep module angle the same. */
   fun stop() {
-    turnController.setpoint = turningMotor.position
+    turningMotor.stopMotor()
+    drivingMotor.stopMotor()
     desiredSpeed = 0.0
   }
 
@@ -85,50 +119,45 @@ open class SwerveModule(
 
   open fun update() {
     /** CONTROL speed of module */
-    val drivePid = driveController.calculate(
-      drivingMotor.velocity
-    )
     val driveFF = driveFeedforward.calculate(
       desiredSpeed
     )
-    drivingMotor.setVoltage(drivePid + driveFF)
+
+    drivingMotor.pidController.setReference(desiredSpeed, CANSparkMax.ControlType.kVelocity, 0, driveFF)
 
     /** CONTROL direction of module */
-    val turnPid = turnController.calculate(
-      turningMotor.position
-    )
-    turningMotor.set(turnPid)
+    turningMotor.pidController.setReference(desiredAngle, CANSparkMax.ControlType.kPosition)
   }
   
   companion object {
     /** Create a real or simulated [SwerveModule] based on the simulation status of the robot. */
     fun create(
       name: String,
-      drivingMotor: WrappedMotor,
-      turningMotor: WrappedMotor,
-      driveController: PIDController,
-      turnController: PIDController,
-      driveFeedforward: SimpleMotorFeedforward,
+      drivingID: Int,
+      turningID: Int,
+      turnEncoderOffset: Double,
       location: Translation2d
     ): SwerveModule {
       if (RobotBase.isReal()) {
         return SwerveModule(
           name,
-          drivingMotor,
-          turningMotor,
-          driveController,
-          turnController,
-          driveFeedforward,
+          drivingID,
+          turningID,
+          Triple(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD),
+          Triple(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD),
+          SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA),
+          turnEncoderOffset,
           location
         )
       } else {
         return SwerveModuleSim(
           name,
-          drivingMotor,
-          turningMotor,
-          driveController,
-          turnController,
-          driveFeedforward,
+          drivingID,
+          turningID,
+          Triple(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD),
+          Triple(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD),
+          SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA),
+          turnEncoderOffset,
           location
         )
       }
@@ -139,43 +168,43 @@ open class SwerveModule(
 /** A "simulated" swerve module. Immediately reaches to its desired state. */
 class SwerveModuleSim(
   name: String,
-  drivingMotor: WrappedMotor,
-  turningMotor: WrappedMotor,
-  driveController: PIDController,
-  turnController: PIDController,
+  drivingID: Int,
+  turningID: Int,
+  drivingPidGains: Triple<Double, Double, Double>,
+  turningPidGains: Triple<Double, Double, Double>,
   driveFeedforward: SimpleMotorFeedforward,
+  turnEncoderOffset: Double,
   location: Translation2d
 ) : SwerveModule(
   name,
-  drivingMotor,
-  turningMotor,
-  driveController,
-  turnController,
+  drivingID,
+  turningID,
+  drivingPidGains,
+  turningPidGains,
   driveFeedforward,
+  turnEncoderOffset,
   location
 ) {
-  private val turningMotorEncoder = Encoder.SimController(turningMotor.encoder)
-  private val driveEncoder = Encoder.SimController(drivingMotor.encoder)
   private var prevTime = Timer.getFPGATimestamp()
   override var state: SwerveModuleState
     get() = SwerveModuleState(
-      driveEncoder.velocity,
-      Rotation2d(turningMotorEncoder.position)
+      drivingEnc.velocity,
+      Rotation2d(turningEnc.position)
     )
     set(desiredState) {
       super.state = desiredState
-      turningMotorEncoder.position = desiredState.angle.radians
-      driveEncoder.velocity = desiredState.speedMetersPerSecond
+      turningMotor.pidController.setReference(desiredState.angle.radians, CANSparkMax.ControlType.kPosition)
+      drivingMotor.pidController.setReference(desiredState.speedMetersPerSecond, CANSparkMax.ControlType.kVelocity)
     }
   override val position: SwerveModulePosition
     get() = SwerveModulePosition(
-      driveEncoder.position,
-      Rotation2d(turningMotorEncoder.position)
+      drivingEnc.position,
+      Rotation2d(turningEnc.position)
     )
 
   override fun update() {
     val currTime = Timer.getFPGATimestamp()
-    driveEncoder.position = driveEncoder.position + driveEncoder.velocity * (currTime - prevTime)
+    drivingEnc.position = drivingEnc.position + drivingEnc.velocity * (currTime - prevTime)
     prevTime = currTime
   }
 }

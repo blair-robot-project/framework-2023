@@ -157,10 +157,10 @@ open class SwerveDrive(
 
   private fun setRobotPose() {
     this.field.robotPose = this.pose
-    this.field.getObject("FL").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[0].angle))
-    this.field.getObject("FR").pose = this.pose.plus(Transform2d(Translation2d(SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2), this.getPositions()[1].angle))
-    this.field.getObject("BL").pose = this.pose.plus(Transform2d(Translation2d(-SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2), this.getPositions()[2].angle))
-    this.field.getObject("BR").pose = this.pose.plus(Transform2d(Translation2d(-SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2), this.getPositions()[0].angle))
+    this.field.getObject("FL").pose = this.pose.plus(Transform2d(SwerveConstants.FL_LOCATION, this.getPositions()[0].angle))
+    this.field.getObject("FR").pose = this.pose.plus(Transform2d(SwerveConstants.FR_LOCATION, this.getPositions()[1].angle))
+    this.field.getObject("BL").pose = this.pose.plus(Transform2d(SwerveConstants.BL_LOCATION, this.getPositions()[2].angle))
+    this.field.getObject("BR").pose = this.pose.plus(Transform2d(SwerveConstants.BR_LOCATION, this.getPositions()[0].angle))
   }
 
   private fun localize() = try {
@@ -204,89 +204,34 @@ open class SwerveDrive(
   companion object {
     /** Create a [SwerveDrive] using [SwerveConstants]. */
     fun createSwerve(ahrs: AHRS, field: Field2d): SwerveDrive {
-      val driveMotorController = { PIDController(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD) }
-      val turnMotorController = { PIDController(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD) }
-      val driveFeedforward = SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA)
       val modules = listOf(
         SwerveModule.create(
-          "FLModule",
-          makeDrivingMotor(
-            "FL",
-            SwerveConstants.DRIVE_MOTOR_FL,
-            inverted = false
-          ),
-          makeTurningMotor(
-            "FL",
-            SwerveConstants.TURN_MOTOR_FL,
-            inverted = true,
-            sensorPhase = false,
-            SwerveConstants.TURN_ENC_CHAN_FL,
-            SwerveConstants.TURN_ENC_OFFSET_FL
-          ),
-          driveMotorController(),
-          turnMotorController(),
-          driveFeedforward,
-          Translation2d(SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2)
+          "FL",
+          SwerveConstants.DRIVE_MOTOR_FL,
+          SwerveConstants.TURN_MOTOR_FL,
+          SwerveConstants.TURN_ENC_OFFSET_FL,
+          SwerveConstants.FL_LOCATION
         ),
         SwerveModule.create(
-          "FRModule",
-          makeDrivingMotor(
-            "FR",
-            SwerveConstants.DRIVE_MOTOR_FR,
-            inverted = false
-          ),
-          makeTurningMotor(
-            "FR",
-            SwerveConstants.TURN_MOTOR_FR,
-            inverted = true,
-            sensorPhase = false,
-            SwerveConstants.TURN_ENC_CHAN_FR,
-            SwerveConstants.TURN_ENC_OFFSET_FR
-          ),
-          driveMotorController(),
-          turnMotorController(),
-          driveFeedforward,
-          Translation2d(SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2)
+          "FR",
+          SwerveConstants.DRIVE_MOTOR_FR,
+          SwerveConstants.TURN_MOTOR_FR,
+          SwerveConstants.TURN_ENC_OFFSET_FR,
+          SwerveConstants.FR_LOCATION
         ),
         SwerveModule.create(
-          "BLModule",
-          makeDrivingMotor(
-            "BL",
-            SwerveConstants.DRIVE_MOTOR_BL,
-            inverted = false
-          ),
-          makeTurningMotor(
-            "BL",
-            SwerveConstants.TURN_MOTOR_BL,
-            inverted = true,
-            sensorPhase = false,
-            SwerveConstants.TURN_ENC_CHAN_BL,
-            SwerveConstants.TURN_ENC_OFFSET_BL
-          ),
-          driveMotorController(),
-          turnMotorController(),
-          driveFeedforward,
-          Translation2d(-SwerveConstants.WHEELBASE / 2, SwerveConstants.TRACKWIDTH / 2)
+          "BL",
+          SwerveConstants.DRIVE_MOTOR_BL,
+          SwerveConstants.TURN_MOTOR_BL,
+          SwerveConstants.TURN_ENC_OFFSET_BL,
+          SwerveConstants.BL_LOCATION
         ),
         SwerveModule.create(
-          "BRModule",
-          makeDrivingMotor(
-            "BR",
-            SwerveConstants.DRIVE_MOTOR_BR,
-            inverted = false
-          ),
-          makeTurningMotor(
-            "BR",
-            SwerveConstants.TURN_MOTOR_BR,
-            inverted = true,
-            sensorPhase = false,
-            SwerveConstants.TURN_ENC_CHAN_BR,
-            SwerveConstants.TURN_ENC_OFFSET_BR
-          ),
-          driveMotorController(),
-          turnMotorController(),
-          driveFeedforward,
-          Translation2d(-SwerveConstants.WHEELBASE / 2, -SwerveConstants.TRACKWIDTH / 2)
+          "BR",
+          SwerveConstants.DRIVE_MOTOR_BR,
+          SwerveConstants.TURN_MOTOR_BR,
+          SwerveConstants.TURN_ENC_OFFSET_BR,
+          SwerveConstants.BR_LOCATION
         )
       )
       return if (isReal()) {

@@ -11,6 +11,7 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
+import edu.wpi.first.wpilibj2.command.InstantCommand
 import frc.team449.control.DriveCommand
 import frc.team449.control.obstacleAvoidance.*
 import frc.team449.robot2023.Robot
@@ -106,12 +107,16 @@ class RobotLoop : TimedRobot() {
       CommandScheduler.getInstance().cancel(autoCommand)
     }
     robot.drive.defaultCommand = DriveCommand(robot.drive, robot.oi)
+
+
+    robot.shooter.runShoot()
   }
 
   override fun teleopPeriodic() {
   }
 
   override fun disabledInit() {
+    robot.shooter.stopShoot()
     robot.drive.stop()
   }
 
