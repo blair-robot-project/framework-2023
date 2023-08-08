@@ -1,8 +1,11 @@
 package frc.team449.control.holonomic
 
+import com.revrobotics.AbsoluteEncoder
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
+import com.revrobotics.RelativeEncoder
 import com.revrobotics.SparkMaxAbsoluteEncoder
+import com.revrobotics.SparkMaxRelativeEncoder
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.math.geometry.Rotation2d
 import edu.wpi.first.math.geometry.Translation2d
@@ -17,14 +20,14 @@ import kotlin.math.PI
 import kotlin.math.abs
 
 
-// TODO: change these docs
 /**
  * Controls a Swerve Module.
  * @param name The name of the module (used for logging).
- * @param drivingMotor The motor that controls the speed of the module.
- * @param turningMotor The motor that controls the angle of the module
- * @param driveController The velocity control for speed of the module
- * @param turnController The position control for the angle of the module
+ * @param drivingID The id of the motor that controls the speed of the module.
+ * @param turningID The id of the motor that controls the angle of the module.
+ * @param inverted The inverted statuses of the (driving motor, turning motor, turning encoder] in a [Triple].
+ * @param drivePidGains The pid gains for the driving motor.
+ * @param turnPidGains The pid gains for the turning motor.
  * @param driveFeedforward The voltage predicting equation for a given speed of the module.
  * @param location The location of the module in reference to the center of the robot.
  * NOTE: In relation to the robot [+X is forward, +Y is left, and +THETA is Counter Clock-Wise].
@@ -33,6 +36,7 @@ open class SwerveModule(
   private val name: String,
   drivingID: Int,
   turningID: Int,
+  inverted: Triple<Boolean, Boolean, Boolean>,
   drivePidGains: Triple<Double, Double, Double>,
   turnPidGains: Triple<Double, Double, Double>,
   private val driveFeedforward: SimpleMotorFeedforward,
@@ -40,29 +44,37 @@ open class SwerveModule(
   val location: Translation2d
 ) : Loggable {
 
-  val drivingMotor = CANSparkMax(drivingID, CANSparkMaxLowLevel.MotorType.kBrushless)
-  val turningMotor = CANSparkMax(turningID, CANSparkMaxLowLevel.MotorType.kBrushless)
+  private val drivingMotor: CANSparkMax = CANSparkMax(drivingID, CANSparkMaxLowLevel.MotorType.kBrushless)
+  private val turningMotor: CANSparkMax = CANSparkMax(turningID, CANSparkMaxLowLevel.MotorType.kBrushless)
 
-  val drivingEnc = drivingMotor.encoder
-  val turningEnc = turningMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle)
+  val drivingEnc: RelativeEncoder = drivingMotor.encoder
+  val turningEnc: AbsoluteEncoder = turningMotor.getAbsoluteEncoder(SparkMaxAbsoluteEncoder.Type.kDutyCycle)
 
   init {
     SparkUtil.applySparkSettings(
       drivingMotor,
+      enableBrakeMode = true,
+      inverted = inverted.first,
+      currentLimit = SwerveConstants.DRIVE_CURRENT_LIM,
       encoder = drivingEnc,
       gearing = SwerveConstants.DRIVE_GEARING,
       unitPerRotation = SwerveConstants.DRIVE_UPR,
-      pidGains = drivePidGains
     )
 
     SparkUtil.applySparkSettings(
       turningMotor,
+      enableBrakeMode = false,
+      inverted = inverted.second,
+      currentLimit = SwerveConstants.STEERING_CURRENT_LIM,
       encoder = turningEnc,
       gearing = 1.0,
       unitPerRotation = SwerveConstants.TURN_UPR,
       offset = turnEncoderOffset,
-      pidGains = turnPidGains
+      encInverted = inverted.third
     )
+
+    SparkUtil.setPID(drivingMotor, drivePidGains)
+    SparkUtil.setPID(turningMotor, turnPidGains)
 
     SparkUtil.enableContinuousInput(turningMotor, 0.0, 2 * PI)
   }
@@ -129,6 +141,7 @@ open class SwerveModule(
       name: String,
       drivingID: Int,
       turningID: Int,
+      inverted: Triple<Boolean, Boolean, Boolean>,
       turnEncoderOffset: Double,
       location: Translation2d
     ): SwerveModule {
@@ -137,6 +150,7 @@ open class SwerveModule(
           name,
           drivingID,
           turningID,
+          inverted,
           Triple(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD),
           Triple(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD),
           SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA),
@@ -148,6 +162,7 @@ open class SwerveModule(
           name,
           drivingID,
           turningID,
+          inverted,
           Triple(SwerveConstants.DRIVE_KP, SwerveConstants.DRIVE_KI, SwerveConstants.DRIVE_KD),
           Triple(SwerveConstants.TURN_KP, SwerveConstants.TURN_KI, SwerveConstants.TURN_KD),
           SimpleMotorFeedforward(SwerveConstants.DRIVE_KS, SwerveConstants.DRIVE_KV, SwerveConstants.DRIVE_KA),
@@ -164,6 +179,7 @@ class SwerveModuleSim(
   name: String,
   drivingID: Int,
   turningID: Int,
+  inverted: Triple<Boolean, Boolean, Boolean>,
   drivingPidGains: Triple<Double, Double, Double>,
   turningPidGains: Triple<Double, Double, Double>,
   driveFeedforward: SimpleMotorFeedforward,
@@ -173,6 +189,7 @@ class SwerveModuleSim(
   name,
   drivingID,
   turningID,
+  inverted,
   drivingPidGains,
   turningPidGains,
   driveFeedforward,

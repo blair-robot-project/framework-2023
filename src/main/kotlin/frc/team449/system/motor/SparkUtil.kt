@@ -21,9 +21,7 @@ object SparkUtil {
     unitPerRotation: Double,
     gearing: Double,
     offset: Double = Double.NaN,
-
-    // pid information
-    pidGains: Triple<Double, Double, Double>
+    encInverted: Boolean = false,
   ) {
 
     sparkMax.restoreFactoryDefaults()
@@ -52,6 +50,7 @@ object SparkUtil {
         encoder.positionConversionFactor = unitPerRotation * gearing
         encoder.velocityConversionFactor = unitPerRotation * gearing / 60
         encoder.zeroOffset = offset
+        encoder.setInverted(encInverted)
       }
       is SparkMaxRelativeEncoder -> {
         encoder.positionConversionFactor = unitPerRotation * gearing
@@ -60,16 +59,12 @@ object SparkUtil {
       is SparkMaxAlternateEncoder -> {
         encoder.positionConversionFactor = unitPerRotation * gearing
         encoder.velocityConversionFactor = unitPerRotation * gearing / 60
+        encoder.setInverted(encInverted)
       }
       else -> throw IllegalStateException("UNSUPPORTED ENCODER PLUGGED INTO SPARK MAX.")
     }
 
     sparkMax.pidController.setFeedbackDevice(encoder)
-
-    sparkMax.pidController.p = pidGains.first
-    sparkMax.pidController.i = pidGains.second
-    sparkMax.pidController.d = pidGains.third
-
   }
 
   fun enableContinuousInput(sparkMax: CANSparkMax, min: Double, max: Double) {
@@ -80,8 +75,9 @@ object SparkUtil {
     controller.setPositionPIDWrappingMaxInput(max)
   }
 
-  fun setPID(p: Double, i: Double, d: Double) {
-
+  fun setPID(sparkMax: CANSparkMax, pidGains: Triple<Double, Double, Double>) {
+    sparkMax.pidController.p = pidGains.first
+    sparkMax.pidController.i = pidGains.second
+    sparkMax.pidController.d = pidGains.third
   }
-
 }

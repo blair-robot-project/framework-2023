@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.Timer
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
-import edu.wpi.first.wpilibj2.command.InstantCommand
 import frc.team449.control.DriveCommand
 import frc.team449.control.obstacleAvoidance.*
 import frc.team449.robot2023.Robot
@@ -20,7 +19,6 @@ import frc.team449.robot2023.auto.PositionChooser
 import frc.team449.robot2023.auto.routines.RoutineChooser
 import frc.team449.robot2023.commands.light.Rainbow
 import frc.team449.robot2023.constants.RobotConstants
-import frc.team449.robot2023.constants.drives.SwerveConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
 import frc.team449.robot2023.subsystems.ControllerBindings
 import io.github.oblarg.oblog.Logger

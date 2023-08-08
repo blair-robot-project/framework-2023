@@ -20,8 +20,9 @@ class Shooter(
       encoder = shooterEncoder,
       gearing = 1.0,
       unitPerRotation = 1.0,
-      pidGains = Triple(1.0, 0.0, 0.0)
     )
+
+    SparkUtil.setPID(shooterMotor, Triple(1.0, 0.0, 0.0))
   }
 
   private var runShoot = false

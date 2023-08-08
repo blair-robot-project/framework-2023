@@ -209,6 +209,7 @@ open class SwerveDrive(
           "FL",
           SwerveConstants.DRIVE_MOTOR_FL,
           SwerveConstants.TURN_MOTOR_FL,
+          Triple(false, true, false),
           SwerveConstants.TURN_ENC_OFFSET_FL,
           SwerveConstants.FL_LOCATION
         ),
@@ -216,6 +217,7 @@ open class SwerveDrive(
           "FR",
           SwerveConstants.DRIVE_MOTOR_FR,
           SwerveConstants.TURN_MOTOR_FR,
+          Triple(false, true, false),
           SwerveConstants.TURN_ENC_OFFSET_FR,
           SwerveConstants.FR_LOCATION
         ),
@@ -223,6 +225,7 @@ open class SwerveDrive(
           "BL",
           SwerveConstants.DRIVE_MOTOR_BL,
           SwerveConstants.TURN_MOTOR_BL,
+          Triple(false, true, false),
           SwerveConstants.TURN_ENC_OFFSET_BL,
           SwerveConstants.BL_LOCATION
         ),
@@ -230,6 +233,7 @@ open class SwerveDrive(
           "BR",
           SwerveConstants.DRIVE_MOTOR_BR,
           SwerveConstants.TURN_MOTOR_BR,
+          Triple(false, true, false),
           SwerveConstants.TURN_ENC_OFFSET_BR,
           SwerveConstants.BR_LOCATION
         )
