@@ -3,6 +3,7 @@ package frc.team449.robot2023.subsystems.testShooter
 import com.revrobotics.CANSparkMax
 import com.revrobotics.CANSparkMaxLowLevel
 import com.revrobotics.MotorFeedbackSensor
+import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team449.system.motor.EncoderType
 import frc.team449.system.motor.SparkUtil
@@ -27,26 +28,18 @@ class Shooter(
 
   private var runShoot = false
 
-  fun runShoot() {
-    runShoot = true;
+  fun runShoot(): Command {
+    return this.runOnce { shooterMotor.pidController.setReference(5.0, CANSparkMax.ControlType.kVelocity) }
   }
 
-  fun stopShoot() {
-    runShoot = false;
+  fun stopShoot(): Command {
+    return this.runOnce { shooterMotor.stopMotor() }
   }
 
-  override fun periodic() {
-    if (runShoot) {
-      shooterMotor.pidController.setReference(5.0, CANSparkMax.ControlType.kVelocity)
-    }
-    else {
-      shooterMotor.stopMotor()
-    }
-  }
 
   companion object {
     fun createShooter(): Shooter {
-      return Shooter(ShooterConstants.SHOOTERID)
+      return Shooter(ShooterConstants.SHOOTER_ID)
     }
   }
 
