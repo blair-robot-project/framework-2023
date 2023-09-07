@@ -1,6 +1,7 @@
 package frc.team449.robot2023.subsystems
 
 import edu.wpi.first.wpilibj.XboxController
+import edu.wpi.first.wpilibj2.command.button.JoystickButton
 import frc.team449.robot2023.Robot
 
 class ControllerBindings(
@@ -20,5 +21,11 @@ class ControllerBindings(
      *       )
      *     }
      */
+
+    JoystickButton(driveController, XboxController.Button.kX.value).onTrue(
+      robot.shooter.runShoot()
+    ).onFalse(
+      robot.shooter.stopShoot()
+    )
   }
 }

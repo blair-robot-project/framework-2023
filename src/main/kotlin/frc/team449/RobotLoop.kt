@@ -105,16 +105,12 @@ class RobotLoop : TimedRobot() {
       CommandScheduler.getInstance().cancel(autoCommand)
     }
     robot.drive.defaultCommand = DriveCommand(robot.drive, robot.oi)
-
-
-    robot.shooter.runShoot()
   }
 
   override fun teleopPeriodic() {
   }
 
   override fun disabledInit() {
-    robot.shooter.stopShoot()
     robot.drive.stop()
   }
 

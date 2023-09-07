@@ -43,8 +43,6 @@ object SparkUtil {
       slave.burnFlash()
     }
 
-    sparkMax.burnFlash()
-
     when (encoder) {
       is SparkMaxAbsoluteEncoder -> {
         encoder.positionConversionFactor = unitPerRotation * gearing
@@ -65,6 +63,8 @@ object SparkUtil {
     }
 
     sparkMax.pidController.setFeedbackDevice(encoder)
+
+    sparkMax.burnFlash()
   }
 
   fun enableContinuousInput(sparkMax: CANSparkMax, min: Double, max: Double) {
