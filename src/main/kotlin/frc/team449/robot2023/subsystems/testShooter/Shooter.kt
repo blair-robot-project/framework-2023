@@ -1,9 +1,15 @@
 package frc.team449.robot2023.subsystems.testShooter
 
+<<<<<<< HEAD
 import edu.wpi.first.math.controller.PIDController
 import edu.wpi.first.math.controller.SimpleMotorFeedforward
 import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.Command.InterruptionBehavior.kCancelSelf
+=======
+import com.revrobotics.CANSparkMax
+import com.revrobotics.CANSparkMaxLowLevel
+import com.revrobotics.MotorFeedbackSensor
+>>>>>>> parent of 8cf148c (cleaned up new spark max and code and shooter code to teach the rookies)
 import edu.wpi.first.wpilibj2.command.SubsystemBase
 import frc.team449.system.encoder.NEOEncoder
 import frc.team449.system.motor.createSparkMax
@@ -34,6 +40,7 @@ class Shooter(
     ffConstants.third
   )
 
+<<<<<<< HEAD
   fun runShoot(): Command {
     return this.runOnce {
       motor.setVoltage(
@@ -58,6 +65,28 @@ class Shooter(
         ShooterConstants.kFF,
         ShooterConstants.GOAL
       )
+=======
+  fun runShoot() {
+    runShoot = true;
+  }
+
+  fun stopShoot() {
+    runShoot = false;
+  }
+
+  override fun periodic() {
+    if (runShoot) {
+      shooterMotor.pidController.setReference(5.0, CANSparkMax.ControlType.kVelocity)
+    }
+    else {
+      shooterMotor.stopMotor()
+    }
+  }
+
+  companion object {
+    fun createShooter(): Shooter {
+      return Shooter(ShooterConstants.SHOOTERID)
+>>>>>>> parent of 8cf148c (cleaned up new spark max and code and shooter code to teach the rookies)
     }
   }
 
