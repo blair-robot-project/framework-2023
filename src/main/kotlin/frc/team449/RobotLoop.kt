@@ -44,7 +44,6 @@ class RobotLoop : TimedRobot() {
 
     PathPlannerServer.startServer(5811)
 
-
     Logger.configureLoggingAndConfig(robot, false)
     SmartDashboard.putData("Field", robot.field)
     SmartDashboard.putData("Routine Chooser", routineChooser)
