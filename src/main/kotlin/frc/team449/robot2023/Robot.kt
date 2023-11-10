@@ -7,6 +7,7 @@ import frc.team449.RobotBase
 import frc.team449.control.holonomic.SwerveDrive
 import frc.team449.control.holonomic.SwerveOrthogonalCommand
 import frc.team449.robot2023.constants.RobotConstants
+import frc.team449.robot2023.subsystems.light.Light
 import frc.team449.system.AHRS
 import io.github.oblarg.oblog.annotations.Log
 
@@ -32,7 +33,7 @@ class Robot : RobotBase() {
   @Log(name = "Joystick Input")
   override val driveCommand = SwerveOrthogonalCommand(drive, driveController)
 
-//  val light = Light.createLight()
-//
+  val light = Light.createLight()
+
 //  val infrared = DigitalInput(RobotConstants.IR_CHANNEL)
 }

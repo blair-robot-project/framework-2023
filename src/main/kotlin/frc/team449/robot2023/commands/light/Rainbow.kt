@@ -20,7 +20,8 @@ class Rainbow(
   override fun execute() {
     for (i in 0 until led.buffer.length) {
       val hue = (firstHue + i * 180 / led.buffer.length) % 180
-      led.buffer.setHSV(i, hue, 255, 255)
+
+      led.setHSV(i, hue, 255, 255)
     }
     firstHue += 1
     firstHue %= 180

@@ -12,13 +12,17 @@ class ConeAnimation(
     addRequirements(led)
   }
 
+  override fun runsWhenDisabled(): Boolean {
+    return true
+  }
+
   private var firstIntensity = 175.0
 
   override fun execute() {
     for (i in 0 until led.buffer.length) {
       // This number is related to how many lights will show up between the high and low intensity
       val intensity = MathUtil.inputModulus(firstIntensity + i * 37.5 / led.buffer.length, 175.0, 255.0)
-      led.buffer.setHSV(i, 30, 255, intensity.toInt())
+      led.setHSV(i, 30, 255, intensity.toInt())
 
       // The i * 255.0 relates to how fast it will cycle in between the high and low intensity
       firstIntensity += 0.075

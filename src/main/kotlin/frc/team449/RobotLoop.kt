@@ -10,6 +10,7 @@ import edu.wpi.first.wpilibj2.command.Command
 import edu.wpi.first.wpilibj2.command.CommandScheduler
 import frc.team449.robot2023.Robot
 import frc.team449.robot2023.auto.routines.RoutineChooser
+import frc.team449.robot2023.commands.light.BlairAnimation
 import frc.team449.robot2023.constants.RobotConstants
 import frc.team449.robot2023.constants.vision.VisionConstants
 import frc.team449.robot2023.subsystems.ControllerBindings
@@ -51,7 +52,7 @@ class RobotLoop : TimedRobot() {
 
     controllerBinder.bindButtons()
 
-//    robot.light.defaultCommand = BlairAnimation(robot.light)
+    robot.light.defaultCommand = BlairAnimation(robot.light)
   }
 
   override fun robotPeriodic() {

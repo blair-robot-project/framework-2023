@@ -8,7 +8,6 @@ import frc.team449.robot2023.subsystems.light.Light
 
 class PickupBlink {
   fun blinkGreen(light: Light): Command {
-    // TODO: Finish this up and test it ig
     val cmdGroup = SequentialCommandGroup()
 
     cmdGroup.addRequirements(light)
@@ -20,12 +19,14 @@ class PickupBlink {
       cmdGroup.addCommands(WaitCommand(0.1))
     }
 
+    cmdGroup.ignoringDisable(true)
+
     return cmdGroup
   }
 
   private fun setColor(led: Light, r: Int, g: Int, b: Int) {
     for (i in 0 until led.buffer.length) {
-      led.buffer.setRGB(i, r, g, b)
+      led.setRGB(i, r, g, b)
     }
   }
 }
