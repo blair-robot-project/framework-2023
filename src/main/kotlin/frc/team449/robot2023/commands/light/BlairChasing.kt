@@ -4,7 +4,8 @@ import edu.wpi.first.math.MathUtil
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team449.robot2023.subsystems.light.Light
 
-class BlairAnimation(
+/** Description: Have a linear transition from white to red */
+class BlairChasing(
   private val led: Light
 ) : CommandBase() {
 
@@ -20,15 +21,12 @@ class BlairAnimation(
 
   override fun execute() {
     for (i in 0 until led.buffer.length) {
-      // This number is related to how many lights will show up between the high and low intensity
-      val saturation = MathUtil.inputModulus(firstSaturation + i * 275.0 / led.buffer.length, 0.0, 255.0)
+      // This number is related to how many lights will show up between the high and low intensity (which technically also affects how fast itll cycle)
+      val saturation = MathUtil.inputModulus(firstSaturation + i * 300.0 / led.buffer.length, 0.0, 255.0)
       led.setHSV(i, 0, saturation.toInt(), 255)
 
-//      led.buffer.setRGB(i, 255, 255, 255)
-
-
       // The i * 255.0 relates to how fast it will cycle in between the high and low intensity
-      firstSaturation += 0.0225
+      firstSaturation += 0.0375
       firstSaturation = MathUtil.inputModulus(firstSaturation, 0.0, 255.0)
     }
   }

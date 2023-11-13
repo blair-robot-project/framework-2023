@@ -4,7 +4,8 @@ import edu.wpi.first.math.MathUtil
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team449.robot2023.subsystems.light.Light
 
-class CubeAnimation(
+/** Description: Have a linear transition from a darker to brighter yellow */
+class Cone(
   private val led: Light
 ) : CommandBase() {
 
@@ -21,12 +22,12 @@ class CubeAnimation(
   override fun execute() {
     for (i in 0 until led.buffer.length) {
       // This number is related to how many lights will show up between the high and low intensity
-      val intensity = MathUtil.inputModulus(firstIntensity + i * 37.5 / led.buffer.length, 150.0, 255.0)
-      led.setHSV(i, 150, 255, intensity.toInt())
+      val intensity = MathUtil.inputModulus(firstIntensity + i * 37.5 / led.buffer.length, 175.0, 255.0)
+      led.setHSV(i, 30, 255, intensity.toInt())
 
       // The i * 255.0 relates to how fast it will cycle in between the high and low intensity
       firstIntensity += 0.075
-      firstIntensity = MathUtil.inputModulus(firstIntensity, 150.0, 255.0)
+      firstIntensity = MathUtil.inputModulus(firstIntensity, 175.0, 255.0)
     }
   }
 }

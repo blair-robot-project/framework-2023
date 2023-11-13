@@ -1,10 +1,12 @@
 package frc.team449.robot2023.commands.light
 
-import edu.wpi.first.math.MathUtil
 import edu.wpi.first.wpilibj2.command.CommandBase
 import frc.team449.robot2023.subsystems.light.Light
+import kotlin.random.Random
 
-class Rainbow(
+/** Description: Have a random color set for every led every 20ms
+ *    a.k.a. you go blind  */
+class Crazy(
   private val led: Light
 ) : CommandBase() {
 
@@ -16,15 +18,9 @@ class Rainbow(
     return true
   }
 
-  private var firstHue = 0.0
-
   override fun execute() {
     for (i in 0 until led.buffer.length) {
-      val hue = MathUtil.clamp(firstHue + i * 180 / led.buffer.length, 0.0, 180.0)
-
-      led.setHSV(i, hue.toInt(), 255, 255)
+      led.setRGB(i, Random.nextInt(0, 256), Random.nextInt(0, 256), Random.nextInt(0, 256))
     }
-    firstHue += 1.5
-    firstHue %= 180
   }
 }
